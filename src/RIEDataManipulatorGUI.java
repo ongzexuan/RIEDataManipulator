@@ -4,6 +4,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 /**
  * Created by ongzexuan on 27/4/14.
@@ -19,6 +20,10 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
     private JMenu menuFile;
     private JMenu menuData;
     private JPanel pnlMain;
+    private JFileChooser fc;
+    private FileDialog fd;
+
+    private JMenuItem miExport;
 
     private JCheckBox uIDc;
     private JCheckBox namec;
@@ -29,6 +34,7 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
     private JCheckBox Desc2c;
     private JCheckBox Awardc;
     private JCheckBox Yearc;
+    private JCheckBox Gradec;
 
 
 
@@ -69,6 +75,10 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         menuFile= new JMenu("File");
         menubar.add(menuFile);
 
+        miExport = new JMenuItem("Export");
+        miExport.addActionListener(this);
+        menuFile.add(miExport);
+
         menuData = new JMenu("Data");
         menubar.add(menuData);
 
@@ -81,6 +91,17 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         Desc2c = new JCheckBox("Desc2");
         Awardc = new JCheckBox("Award");
         Yearc = new JCheckBox("Year");
+        Gradec = new JCheckBox("Grade");
+        uIDc.addActionListener(this);
+        namec.addActionListener(this);
+        pIDc.addActionListener(this);
+        Categoryc.addActionListener(this);
+        Titlec.addActionListener(this);
+        Desc1c.addActionListener(this);
+        Desc2c.addActionListener(this);
+        Awardc.addActionListener(this);
+        Yearc.addActionListener(this);
+        Gradec.addActionListener(this);
 
         menuData.add(uIDc);
         menuData.add(namec);
@@ -91,6 +112,7 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         menuData.add(Desc2c);
         menuData.add(Awardc);
         menuData.add(Yearc);
+        menuData.add(Gradec);
         uIDc.setSelected(true);
         namec.setSelected(true);
         pIDc.setSelected(true);
@@ -100,14 +122,12 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         Desc2c.setSelected(true);
         Awardc.setSelected(true);
         Yearc.setSelected(true);
-
-
-
+        Gradec.setSelected(true);
 
 
         //Table
         MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
-        model = new DefaultTableModel(rdmm.getData(mu),rdmm.getColumns(mu));
+        model = new DefaultTableModel(rdmm.getData(mu,Gradec.isSelected(),true),rdmm.getColumns(mu,Gradec.isSelected()));
         //table = new JTable(rdmm.getData(),rdmm.getColumns());
         table = new JTable();
         table.setModel(model);
@@ -116,18 +136,38 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         pnlMain.add(jsp,BorderLayout.CENTER);
 
 
-
-
     }
 
     public void actionPerformed(ActionEvent ae) {
-        if (ae.getSource().equals(btnFetch)) {
+        if (ae.getSource().equals(miExport)) {
+            try {
 
+                /*fd = new FileDialog(RIEDataManipulatorGUI.this);
+                fd.setVisible(true);
+                if (fd.getFile() != null) {
+                    rdmm.exportAsCSV(table,fd.getDirectory()+fd.getFile());
+                }*/
+
+
+                fc = new JFileChooser();
+                int rtnVal = fc.showSaveDialog(RIEDataManipulatorGUI.this);
+                if (rtnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+
+                    rdmm.exportAsCSV(table,file.getPath());
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if (ae.getSource().equals(btnFetch)) {
             MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
-
-            model = new DefaultTableModel(rdmm.getData(mu),rdmm.getColumns(mu));
+            model = new DefaultTableModel(rdmm.getData(mu,Gradec.isSelected(),true),rdmm.getColumns(mu,Gradec.isSelected()));
             table.setModel(model);
-
+        } else {
+            MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
+            model = new DefaultTableModel(rdmm.getData(mu,Gradec.isSelected(),false),rdmm.getColumns(mu,Gradec.isSelected()));
+            table.setModel(model);
         }
     }
 

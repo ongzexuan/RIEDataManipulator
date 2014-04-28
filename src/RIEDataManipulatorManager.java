@@ -1,4 +1,8 @@
+import javax.swing.*;
+import javax.swing.table.TableModel;
 import javax.xml.transform.Result;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -8,28 +12,25 @@ import java.util.ArrayList;
  */
 public class RIEDataManipulatorManager {
 
-    //BOOLEANS
-    //private boolean uIDb, nameb, pIDb, Categoryb, Titleb, Desc1b, Desc2b, Awardb, Yearb;
 
 
     private String url = "jdbc:mysql://lorongpisang.dyndns.org:3306/rie_transcript";
     private String user = "maki";
     private String pass = "bestgirl";
-    private String query = "SELECT * FROM Students s, Records r, Student_Records sr WHERE s.user_ID = sr.uID AND r.project_ID = sr.pID;";
+    private String query = "SELECT * FROM Students s, Records r, Student_Records sr WHERE s.user_ID = sr.uID AND r.project_ID = sr.pID ORDER BY s.user_ID, Year;";
+
+    ArrayList<DataUnit> currentData = null;//as an intermediate data storage unit
+
 
     public RIEDataManipulatorManager() {
-        //uIDb = nameb = pIDb = Categoryb = Titleb = Desc1b = Desc2b = Awardb = Yearb = true;
 
-        //getConnection(url, user, pass, query);
-        //getColumns();
-        //getData();
 
     }
 
     public ArrayList<DataUnit> getConnection(String url, String user, String pass, String query) {
 
         //should try validating the input first
-        //System.out.println("getConnection()");
+
 
         try {
 
@@ -65,26 +66,24 @@ public class RIEDataManipulatorManager {
 
 
                 DataUnit du = new DataUnit(uID,name,pID,Category,Title,Desc1,Desc2,Award,Year);
-                //System.out.println(du.toString());
+
                 dataArray.add(du);
             }
 
 
             connection.close();
 
+            currentData = dataArray;
             return dataArray;
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-
         return null;
-
     }
 
     //Method to get the header names
-    public String[] getColumns(MetadataUnit mu) {
-        //System.out.println("getColumns()");
+    public String[] getColumns(MetadataUnit mu, boolean gradeEnabled) {
+
 
         ArrayList<String> als = new ArrayList<String>();
         if (mu.getUIDc()) als.add("uID");
@@ -96,6 +95,7 @@ public class RIEDataManipulatorManager {
         if (mu.getDesc2c()) als.add("Desc2");
         if (mu.getAwardc()) als.add("Award");
         if (mu.getYearc()) als.add("Year");
+        if (gradeEnabled) als.add("Grade");
 
         String[] s = new String[als.size()];
         int i = 0;
@@ -103,40 +103,36 @@ public class RIEDataManipulatorManager {
             s[i++] = als.remove(0);
         }
 
-        /*for (int j = 0; j < s.length; j++) {
-            System.out.println(s[j]);
-        }*/
+
 
         return s;
     }
 
     //Method to get the data for the JTable
     //It is implicit that the number of true booleans for both getData and getColumns are the same. Both methods should be run consecutively.
-    public String[][] getData(MetadataUnit mu) {
-        //System.out.println("getData()");
+    public String[][] getData(MetadataUnit mu, boolean gradeEnabled, boolean fetchNew) {
 
-        ArrayList<DataUnit> ald = getConnection(url, user, pass, query);
+        ArrayList<DataUnit> ald;
+        if (!fetchNew) {
+            if (!hasData()) {
+                ald = getConnection(url, user, pass, query);
+            } else {
+                ald = currentData;
+            }
+        } else {
+            ald = getConnection(url, user, pass, query);
+        }
 
-        //count for number of columns
-        /*int i = 0;
-        if (mu.getUIDc()) i++;
-        if (mu.getNamec()) i++;
-        if (mu.getPIDc()) i++;
-        if (mu.getCategoryc()) i++;
-        if (mu.getTitlec()) i++;
-        if (mu.getDesc1c()) i++;
-        if (mu.getDesc2c()) i++;
-        if (mu.getAwardc()) i++;
-        if (mu.getAwardc()) i++;*/
+        int n = 0;
+        if (gradeEnabled) n = 1;
 
-        String[][] s = new String[ald.size()][mu.countTrue()];
-        //int r = ald.size();
-        //int c = i;
+
+        String[][] s = new String[ald.size()][mu.countTrue()+n];
 
         int i = 0;//count rows
-        while(!ald.isEmpty()) {
+        for (int k = 0; k < ald.size(); k++) {
             int j = 0;
-            DataUnit du = ald.remove(0);
+            DataUnit du = ald.get(k);
             if (mu.getUIDc()) s[i][j++] = du.getUID();
             if (mu.getNamec()) s[i][j++] = du.getName();
             if (mu.getPIDc()) s[i][j++] = du.getPID();
@@ -150,44 +146,55 @@ public class RIEDataManipulatorManager {
             i++;
         }
 
-        /*for (int j = 0; j < r; j++) {
-            System.out.println("Printing Row "+j);
-            for (int k = 0; k < c; k++) {
-                System.out.println(s[j][k]);
-            }
-
-        }*/
-
         return s;
     }
 
-    //STATE SETTERS
-    /*public void setStateUID(boolean b) {
-        uIDb = b;
+    public boolean hasData() {
+        if (currentData.equals(null)) return false;
+        else return true;
     }
-    public void setStateName(boolean b) {
-        nameb = b;
+
+    public void exportAsCSV(JTable table, String path) {
+        try {
+
+            TableModel model = table.getModel();
+            PrintWriter pw = new PrintWriter(new FileOutputStream(path));
+
+
+
+            int n = model.getColumnCount();
+            if (n < 1) return;
+            int i = 0;
+            for (; i < n-1; i++) {
+                pw.print(model.getColumnName(i) + ",");
+            }
+            pw.println(model.getColumnName(i));
+
+
+            int m = model.getRowCount();
+            for (int j = 0; j < m; j++) {
+                int k = 0;
+                for (; k < n-1; k++) {
+                    try {
+                        pw.print("\""+model.getValueAt(j, k).toString() + "\",");
+                    } catch(NullPointerException ne) {
+                        pw.print(",");
+                    }
+                }
+                try {
+                    pw.println("\""+model.getValueAt(j, k).toString()+"\"");
+                } catch(NullPointerException ne) {
+                    pw.print("\n");
+                }
+            }
+
+
+            pw.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
     }
-    public void setStatePID(boolean b) {
-        pIDb = b;
-    }
-    public void setStateCategory(boolean b) {
-        Categoryb = b;
-    }
-    public void setStateTitle(boolean b) {
-        Titleb = b;
-    }
-    public void setStateDesc1(boolean b) {
-        Desc1b = b;
-    }
-    public void setStateDesc2(boolean b) {
-        Desc2b = b;
-    }
-    public void setStateAward(boolean b) {
-        Awardb = b;
-    }
-    public void setStateYear(boolean b) {
-        Yearb = b;
-    }*/
+
 
 }
