@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Created by ongzexuan on 27/4/14.
@@ -19,9 +21,10 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
     private JMenuBar menubar;
     private JMenu menuFile;
     private JMenu menuData;
+    private JMenu menuCheck;
     private JPanel pnlMain;
     private JFileChooser fc;
-    private FileDialog fd;
+
 
     private JMenuItem miExport;
 
@@ -35,6 +38,8 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
     private JCheckBox Awardc;
     private JCheckBox Yearc;
     private JCheckBox Gradec;
+
+    private JMenuItem miCheckARP;
 
 
 
@@ -124,6 +129,12 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         Yearc.setSelected(true);
         Gradec.setSelected(true);
 
+        menuCheck = new JMenu("Check");
+        menubar.add(menuCheck);
+        miCheckARP = new JMenuItem("Check all Students for ARP");
+        menuCheck.add(miCheckARP);
+        miCheckARP.addActionListener(this);
+
 
         //Table
         MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
@@ -136,6 +147,11 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         pnlMain.add(jsp,BorderLayout.CENTER);
 
 
+    }
+    public MetadataUnit makeMetadata() {
+
+        MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
+        return mu;
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -158,6 +174,22 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
                 }
             } catch(Exception e) {
                 e.printStackTrace();
+            }
+        }
+        else if(ae.getSource().equals(miCheckARP)) {
+            try {
+                String s = (String)JOptionPane.showInputDialog(RIEDataManipulatorGUI.this,"Enter number of students who joined us in year 1, 2 and 3 in the following format: x,y,z","Check if all students have ARP",JOptionPane.PLAIN_MESSAGE);
+                Scanner sc = new Scanner(s);
+                sc.useDelimiter(",");
+                int x = Integer.parseInt(sc.next());
+                int y = Integer.parseInt(sc.next());
+                int z = Integer.parseInt(sc.next());
+
+                //MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
+                ArrayList<String> rtnList = rdmm.findMissing(x,y,z);
+            } catch(Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(RIEDataManipulatorGUI.this,"Invalid Input!","Error",JOptionPane.WARNING_MESSAGE);
             }
         }
         else if (ae.getSource().equals(btnFetch)) {

@@ -3,8 +3,8 @@
  */
 public class DataUnit {
 
-    String uID="",name="",pID="",Category="",Title="",Desc1="",Desc2="",Award="";
-    int Year = 0;
+    private String uID="",name="",pID="",Category="",Title="",Desc1="",Desc2="",Award="";
+    private int Year = 0;
 
     public DataUnit(String uID, String name, String pID, String Category, String Title, String Desc1, String Desc2, String Award, int Year) {
         this.uID = uID;

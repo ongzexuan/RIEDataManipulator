@@ -3,15 +3,15 @@
  */
 public class MetadataUnit {
 
-    boolean uIDc=true;
-    boolean namec=true;
-    boolean pIDc=true;
-    boolean Categoryc=true;
-    boolean Titlec=true;
-    boolean Desc1c=true;
-    boolean Desc2c=true;
-    boolean Awardc=true;
-    boolean Yearc=true;
+    private boolean uIDc=true;
+    private boolean namec=true;
+    private boolean pIDc=true;
+    private boolean Categoryc=true;
+    private boolean Titlec=true;
+    private boolean Desc1c=true;
+    private boolean Desc2c=true;
+    private boolean Awardc=true;
+    private boolean Yearc=true;
     
     
     public MetadataUnit(boolean a, boolean b, boolean c, boolean d, boolean e, boolean f, boolean g, boolean h, boolean i) {

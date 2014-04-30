@@ -12,20 +12,12 @@ import java.util.ArrayList;
  */
 public class RIEDataManipulatorManager {
 
-
-
     private String url = "jdbc:mysql://lorongpisang.dyndns.org:3306/rie_transcript";
     private String user = "maki";
     private String pass = "bestgirl";
     private String query = "SELECT * FROM Students s, Records r, Student_Records sr WHERE s.user_ID = sr.uID AND r.project_ID = sr.pID ORDER BY s.user_ID, Year;";
 
     ArrayList<DataUnit> currentData = null;//as an intermediate data storage unit
-
-
-    public RIEDataManipulatorManager() {
-
-
-    }
 
     public ArrayList<DataUnit> getConnection(String url, String user, String pass, String query) {
 
@@ -194,6 +186,73 @@ public class RIEDataManipulatorManager {
             e.printStackTrace();
         }
 
+    }
+
+    public ArrayList<String> findMissing(int x, int y, int z) {
+
+        MetadataUnit mu = new MetadataUnit(true,true,true,true,true,true,true,true,true);
+        String[][] s = getData(mu,true,false);
+        ArrayList<String> rtnArray = new ArrayList<String>();
+
+        for (int i = 1; i <= x; i++) {
+            String append = "";
+            if (i < 100) append = "0";
+            if (i < 10) append = "00";
+
+            boolean found = false;
+            for (int j = 0; j < s.length; j++) {
+
+                if (s[j][0].equals("h0910"+append+i)) {
+                    found = true;
+                    j = s.length;
+                }
+            }
+            if (!found) {
+                rtnArray.add("h0910"+append+i);
+            }
+        }
+
+        for (int i = 1; i <= y; i++) {
+            String append = "";
+            if (i < 100) append = "0";
+            if (i < 10) append = "00";
+
+            boolean found = false;
+            for (int j = 0; j < s.length; j++) {
+
+                if (s[j][0].equals("h1020"+append+i)) {
+                    found = true;
+                    j = s.length;
+                }
+            }
+            if (!found) {
+                rtnArray.add("h1020"+append+i);
+            }
+        }
+
+        for (int i = 1; i <= z; i++) {
+            String append = "";
+            if (i < 100) append = "0";
+            if (i < 10) append = "00";
+
+            boolean found = false;
+            for (int j = 0; j < s.length; j++) {
+
+                if (s[j][0].equals("h1130"+append+i)) {
+                    found = true;
+                    j = s.length;
+                }
+            }
+            if (!found) {
+                rtnArray.add("h1130"+append+i);
+            }
+        }
+
+        for (int i = 0; i < rtnArray.size(); i++) {
+            System.out.println(rtnArray.get(i));
+        }
+
+        return rtnArray;
     }
 
 
