@@ -40,6 +40,7 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
     private JCheckBox Gradec;
 
     private JMenuItem miCheckARP;
+    private JMenuItem miCheckPub;
 
 
 
@@ -135,6 +136,10 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         menuCheck.add(miCheckARP);
         miCheckARP.addActionListener(this);
 
+        miCheckPub = new JMenuItem("Check all publication formats");
+        menuCheck.add(miCheckPub);
+        miCheckPub.addActionListener(this);
+
 
         //Table
         MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
@@ -158,19 +163,22 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
         if (ae.getSource().equals(miExport)) {
             try {
 
-                /*fd = new FileDialog(RIEDataManipulatorGUI.this);
-                fd.setVisible(true);
-                if (fd.getFile() != null) {
-                    rdmm.exportAsCSV(table,fd.getDirectory()+fd.getFile());
-                }*/
-
-
                 fc = new JFileChooser();
                 int rtnVal = fc.showSaveDialog(RIEDataManipulatorGUI.this);
                 if (rtnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
 
                     rdmm.exportAsCSV(table,file.getPath());
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if(ae.getSource().equals(miCheckPub)) {
+            try {
+                ArrayList<String> rtnList = rdmm.checkPublications(table);
+                while (!rtnList.isEmpty()) {
+                    JOptionPane.showMessageDialog(RIEDataManipulatorGUI.this,rtnList.remove(0),"Formatting Error",JOptionPane.PLAIN_MESSAGE);
                 }
             } catch(Exception e) {
                 e.printStackTrace();
@@ -187,6 +195,10 @@ public class RIEDataManipulatorGUI extends JFrame implements ActionListener{
 
                 //MetadataUnit mu = new MetadataUnit(uIDc.isSelected(),namec.isSelected(),pIDc.isSelected(),Categoryc.isSelected(),Titlec.isSelected(),Desc1c.isSelected(),Desc2c.isSelected(),Awardc.isSelected(),Yearc.isSelected());
                 ArrayList<String> rtnList = rdmm.findMissing(x,y,z);
+                while (!rtnList.isEmpty()) {
+                    //works for small numbers. You shouldn't have too many missing students in the first place. Keying in wrong numbers teaches you a lesson :P
+                    JOptionPane.showMessageDialog(RIEDataManipulatorGUI.this,rtnList.remove(0),"Missing Student",JOptionPane.PLAIN_MESSAGE);
+                }
             } catch(Exception e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(RIEDataManipulatorGUI.this,"Invalid Input!","Error",JOptionPane.WARNING_MESSAGE);

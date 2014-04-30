@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 
 /**
@@ -253,6 +254,47 @@ public class RIEDataManipulatorManager {
         }
 
         return rtnArray;
+    }
+
+    public ArrayList<String> checkPublications(JTable table) {
+
+        ArrayList<String> rtnArray = new ArrayList<String>();
+        TableModel model = table.getModel();
+        int r = model.getRowCount();
+
+        for (int i = 0; i < r; i++) {
+            if (((String)model.getValueAt(i,3)).equals("Publications")) {//if it is a publication
+                boolean correct = checkFormat((String)model.getValueAt(i,5));
+                if (!correct) {
+                    rtnArray.add((String)model.getValueAt(i,2));
+                }
+            }
+        }
+        return rtnArray;
+    }
+
+    private boolean checkFormat(String input) {
+        Scanner sc = new Scanner(input);
+        sc.useDelimiter(",");
+
+        try {
+            ArrayList<String> tokens = new ArrayList<String>();
+            while(sc.hasNext()) {
+                tokens.add(sc.next());
+            }
+            boolean found = false;
+            while (!tokens.isEmpty()) {
+                char[] s = (tokens.remove(tokens.size() - 1)).toCharArray();//starting from back is faster
+                if (s[0] == '(' && s[s.length-1] == ')') {
+                    found = true;
+                }
+            }
+            return found;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
 
